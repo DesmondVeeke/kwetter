@@ -1,0 +1,14 @@
+# Ignore Docker images and containers
+**/keycloak/*
+**/mailserver/*
+**/api-gateway/*.tar
+**/api-gateway/*.img
+
+# Ignore build files
+**/target/
+**/bin/
+**/out/
+
+*.iml
+.idea/
+.vscode/

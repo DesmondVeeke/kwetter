@@ -1,0 +1,39 @@
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8081:8080"  # Keycloak's internal port exposed on 8081
+    command: start-dev
+    depends_on:
+      - mailserver
+
+  mailserver:
+    image: mailserver/docker-mailserver:latest
+    container_name: mailserver
+    env_file: ./mailserver/mailserver.env  # You can define your environment variables here
+    ports:
+      - "25:25"    # SMTP
+      - "143:143"  # IMAP
+      - "587:587"  # Submission port for emails
+    volumes:
+      - ./mailserver/mail-data:/var/mail
+      - ./mailserver/mail-state:/var/mail-state
+      - ./mailserver/config/:/tmp/docker-mailserver/
+    # environment:
+    #   - ENABLE_SPAMASSASSIN=1
+    #   - ONE_DIR=1
+    #   - DMS_DEBUG=0
+    #   - SSL_TYPE=none # Since it's for local development
+    cap_add:
+      - NET_ADMIN
