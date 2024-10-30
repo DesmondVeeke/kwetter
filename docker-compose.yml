@@ -6,27 +6,58 @@ services:
       - "8080:8080"
     depends_on:
       - keycloak
+    volumes:
+      - ./api-gateway:/app
+  
+  postgres:
+    image: postgres:16.2
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - local_network
 
   keycloak:
-      image: quay.io/keycloak/keycloak:latest
-      environment:
-        - KEYCLOAK_ADMIN=admin
-        - KEYCLOAK_ADMIN_PASSWORD=admin
-      ports:
-        - "8081:8080"  # Keycloak's internal port exposed on 8081
-      command: start-dev
-      depends_on:
-        - mailpit
-      volumes:
-        - keycloak_data:/opt/keycloak/data
-
-  mailpit:
-    image: axllent/mailpit:latest
-    ports:
-      - "8025:8025"   # Mailpit web interface
-      - "1025:1025"   # SMTP
+    image: quay.io/keycloak/keycloak:23.0.6
+    command: start
     environment:
-      - MAILPIT_API=1
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8081
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HEALTH_ENABLED: true
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/${POSTGRES_DB}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 8081:8080
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - local_network
+        
+  mailpit:
+      image: axllent/mailpit:latest
+      ports:
+        - "8025:8025"   # Mailpit web interface
+        - "1025:1025"   # SMTP
+      environment:
+        - MAILPIT_API=1
+      networks:
+        - local_network
 
 volumes:
-  keycloak_data:
+  postgres_data:
+    driver: local
+
+networks:
+  local_network:
+    driver: bridge
