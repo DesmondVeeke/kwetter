@@ -8,6 +8,23 @@ services:
       - keycloak
     volumes:
       - ./api-gateway:/app
+    networks:
+      - local_network
+
+ # Write Kweet Service
+  write-kweet:
+    build:
+      context: ./write
+    environment:
+      POSTGRES_DB_KWEET: ${POSTGRES_DB_KWEET}
+      POSTGRES_USER_KWEET: ${POSTGRES_USER_KWEET}
+      POSTGRES_PASSWORD_KWEET: ${POSTGRES_PASSWORD_KWEET}
+    depends_on:
+      - postgres-kweets
+    ports:
+      - "8082:8082"
+    networks:
+      - local_network
   
   postgres:
     image: postgres:16.2
@@ -17,6 +34,17 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - local_network
+
+  postgres-kweets:
+    image: postgres:16.2
+    volumes:
+      - postgres_kweets_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_KWEET}
+      POSTGRES_USER: ${POSTGRES_USER_KWEET}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_KWEET}
     networks:
       - local_network
 
@@ -45,17 +73,36 @@ services:
       - local_network
         
   mailpit:
-      image: axllent/mailpit:latest
-      ports:
-        - "8025:8025"   # Mailpit web interface
-        - "1025:1025"   # SMTP
-      environment:
-        - MAILPIT_API=1
-      networks:
-        - local_network
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"   # Mailpit web interface
+      - "1025:1025"   # SMTP
+    environment:
+      - MAILPIT_API=1
+    networks:
+      - local_network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false   # Disable security features
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # Limits memory usage
+    ports:
+      - "9200:9200"  # HTTP interface
+      - "9300:9300"  # Transport protocol
+    networks:
+      - local_network
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
 
 volumes:
   postgres_data:
+    driver: local
+  postgres_kweets_data:
+    driver: local
+  elastic_data:
     driver: local
 
 networks:

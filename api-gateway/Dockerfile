@@ -3,6 +3,7 @@ FROM golang:1.20-alpine
 
 # Install git and other dependencies
 RUN apk add --no-cache git
+RUN apk add --no-cache curl
 
 # Set the working directory inside the container
 WORKDIR /app
