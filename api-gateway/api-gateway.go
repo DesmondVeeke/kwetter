@@ -35,8 +35,11 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, serviceURL string) {
 	}
 	defer r.Body.Close()
 
-	// req, err := http.NewRequest(r.Method, serviceURL+r.URL.Path[len("/api/"):], io.NopCloser(bytes.NewReader(body)))
-	req, err := http.NewRequest(r.Method, serviceURL+r.URL.Path, io.NopCloser(bytes.NewReader(body)))
+	// Forward the request without appending the path again
+	forwardURL := serviceURL
+	log.Printf("Forwarding request to: %s", forwardURL)
+
+	req, err := http.NewRequest(r.Method, forwardURL, io.NopCloser(bytes.NewReader(body)))
 	if err != nil {
 		http.Error(w, "Failed to create request", http.StatusInternalServerError)
 		log.Println("Error creating request:", err)
@@ -51,7 +54,6 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, serviceURL string) {
 	}
 
 	client := &http.Client{Timeout: 10 * time.Second}
-
 	resp, err := client.Do(req)
 	if err != nil {
 		http.Error(w, "Service unavailable", http.StatusBadGateway)
@@ -60,6 +62,9 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, serviceURL string) {
 	}
 	defer resp.Body.Close()
 
+	log.Printf("Received response: %d", resp.StatusCode)
+
+	// Forward response headers and body
 	for key, values := range resp.Header {
 		for _, value := range values {
 			w.Header().Add(key, value)

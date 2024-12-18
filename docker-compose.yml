@@ -20,7 +20,8 @@ services:
       POSTGRES_USER_KWEET: ${POSTGRES_USER_KWEET}
       POSTGRES_PASSWORD_KWEET: ${POSTGRES_PASSWORD_KWEET}
     depends_on:
-      - postgres-kweets
+      postgres-kweets:
+        condition: service_healthy
     ports:
       - "8082:8082"
     networks:
@@ -47,6 +48,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_KWEET}
     networks:
       - local_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_KWEET} -d ${POSTGRES_DB_KWEET}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.6
