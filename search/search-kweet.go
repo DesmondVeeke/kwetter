@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"io"
 )
 
 type SearchRequest struct {
@@ -56,7 +57,7 @@ func SearchKweetsHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	// Parse response
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	var searchResponse SearchResponse
 	json.Unmarshal(body, &searchResponse)
 

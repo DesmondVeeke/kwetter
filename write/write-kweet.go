@@ -21,12 +21,13 @@ var db *sql.DB
 
 func createTableIfNotExists() {
 	query := `
-	CREATE TABLE IF NOT EXISTS kweets (
-		id SERIAL PRIMARY KEY,
-		user_name TEXT NOT NULL,
-		content TEXT NOT NULL,
-		created_at TIMESTAMP DEFAULT NOW()
-	);`
+        CREATE TABLE IF NOT EXISTS kweets (
+            id SERIAL PRIMARY KEY,
+            user_name TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+    `
 
 	if _, err := db.Exec(query); err != nil {
 		log.Fatalf("Failed to create table: %v", err)
@@ -34,7 +35,7 @@ func createTableIfNotExists() {
 	log.Println("Table 'kweets' ensured to exist")
 }
 
-func init() {
+func initDB() {
 	// Load environment variables
 	connStr := fmt.Sprintf("host=postgres-kweets user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_USER_KWEET"),
@@ -86,8 +87,13 @@ func WriteKweetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Initialize the database
+	initDB()
+
+	// Set up HTTP handler
 	http.HandleFunc("/write-kweet", WriteKweetHandler)
 
+	// Start the server
 	port := "8082"
 	log.Printf("Write-Kweet service running on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

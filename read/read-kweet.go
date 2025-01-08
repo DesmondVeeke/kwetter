@@ -3,11 +3,8 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
-
-	_ "github.com/lib/pq"
 )
 
 type Kweet struct {
