@@ -8,7 +8,7 @@ RUN apk add --no-cache git curl
 WORKDIR /app
 
 # Copy the go.mod and go.sum files and download dependencies
-COPY go.mod go.sum ./
+COPY go.* ./
 RUN go mod download
 
 # Copy the rest of the application code
