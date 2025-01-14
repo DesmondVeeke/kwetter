@@ -1,27 +1,36 @@
-# Use the official Go image as the base image
-FROM golang:1.20-alpine
+# Stage 1: Build the Go application
+FROM golang:1.20-alpine AS build
 
-# Install git and other dependencies
-RUN apk add --no-cache git
-RUN apk add --no-cache curl
+# Install dependencies
+RUN apk add --no-cache git curl
 
-# Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy go.mod file into the container
-COPY go.mod ./
-
-# Download and install Go dependencies
+# Copy the go.mod and go.sum files and download dependencies
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Install CompileDaemon for hot reloading
-RUN go install github.com/githubnemo/CompileDaemon@latest
-
-# Copy the rest of the application code into the container
+# Copy the rest of the application code
 COPY . .
+
+# Build the Go application
+RUN go build -o api-gateway .
+
+# Stage 2: Final image with only the compiled binary
+FROM alpine:latest
+
+# Install dependencies required for the runtime (if any)
+RUN apk add --no-cache ca-certificates
+
+# Set the working directory
+WORKDIR /root/
+
+# Copy the compiled binary from the build stage
+COPY --from=build /app/api-gateway .
 
 # Expose the port the app runs on
 EXPOSE 8080
 
-# Run the app with CompileDaemon for hot reloading
-CMD ["CompileDaemon", "-log-prefix=false", "-build=go build -o api-gateway .", "-command=./api-gateway"]
+# Run the compiled binary
+CMD ["./api-gateway"]
