@@ -36,7 +36,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./api-gateway/Dockerfile  # Correct path to Dockerfile inside api-gateway
+          context: .  # Root directory of the repository
+          file: ./kwetter/api-gateway/Dockerfile  # Path to Dockerfile inside api-gateway folder
           push: true  # Set to true to push to Docker Hub
           tags: desmondveeke/kwetter-gateway:latest  # Replace with your Docker Hub repository and tag
+
