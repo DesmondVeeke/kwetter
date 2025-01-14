@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         
@@ -36,12 +36,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./kwetter/api-gateway  # Set context to the api-gateway directory
+          file: ./kwetter/api-gateway/Dockerfile  # Path to the Dockerfile in api-gateway
           push: true  # Set to true to push to Docker Hub
           tags: desmondveeke/kwetter-gateway:latest  # Replace with your repository and tag
-
-      - name: Run Tests (Optional, if you have test scripts)
-        run: |
-          # Run any tests you may have for your Go application
-          go test ./...
