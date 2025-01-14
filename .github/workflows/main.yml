@@ -31,7 +31,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ./kwetter/api-gateway
-          file: ./kwetter/api-gateway/Dockerfile
+          context: ./api-gateway 
+          file: ./api-gateway/Dockerfile 
           push: true
           tags: desmondveeke/kwetter-gateway:latest
